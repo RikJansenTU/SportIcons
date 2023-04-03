@@ -27,7 +27,7 @@ with gr.Blocks() as demo:
         text_to_video_button = gr.Button('Generate Video')
         audio = gr.Audio(label='Audio', interactive=True)
         audio_to_video_button = gr.Button('Generate Video')
-        video_output= gr.Video(label='Video')
+        video_output= gr.Video(label='Video', interactive=False)
     with gr.Tab('Text-to-Video'):
         text = gr.Textbox(placeholder='Enter text here', label='Input')
         athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
