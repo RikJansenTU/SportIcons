@@ -20,12 +20,20 @@ def generate(text, athlete):
 
 #creates the Gradio interface
 with gr.Blocks() as demo:
-    text = gr.Textbox(placeholder='Enter text here', label='Input')
-    athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
-    button = gr.Button('Generate Video')
-    output= gr.Video(label='result')
-
-    button.click(generate, inputs=[text, athlete], outputs=output)
+    with gr.Tab('Text-to-Audio-to-Video'):
+        text = gr.Textbox(placeholder='Enter text here', label='Input')
+        athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
+        text_to_audio_button = gr.Button('Generate Audio')
+        text_to_video_button = gr.Button('Generate Video')
+        audio = gr.Audio(label='Audio', interactive=True)
+        audio_to_video_button = gr.Button('Generate Video')
+        video_output= gr.Video(label='Video')
+    with gr.Tab('Text-to-Video'):
+        text = gr.Textbox(placeholder='Enter text here', label='Input')
+        athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
+        text_to_video_button = gr.Button('Generate Video')
+        video_output= gr.Video(label='Video')
+    text_to_video_button.click(generate, inputs=[text, athlete], outputs=video_output)
 
 if __name__ == "__main__":
     demo.launch()
