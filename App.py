@@ -2,7 +2,7 @@ import requests
 import gradio as gr
 import Constants
 
-def generate(text, athlete):
+def generate_audio(text, athlete):
     match athlete:
         case 'Michael Jordan':
             voice_id = 'pNInz6obpgDQGcFmaJgB'
@@ -11,31 +11,43 @@ def generate(text, athlete):
         case 'Serena Williams':
             voice_id = 3        
 
-    header = {'xi-api-key' : Constants.ELEVENLABS_API_KEY}
-    payload = {'text':text, 'voice_settings':{'stability':0.75, 'similarity_boost':0.75}}
-    r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', headers=header, json=payload)
+    url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
+    headers = {'xi-api-key' : Constants.ELEVENLABS_API_KEY}
+    payload = {'text': text, 
+               'voice_settings':
+                    {'stability': 0.75, 
+                     'similarity_boost': 0.75
+                     }
+                }
+    r = requests.post(url, headers=headers, json=payload)
     
     with open('speech.mp3', 'wb') as f:
         f.write(r.content)
     print (r.content)
-    return './speech.mp3'
+
+    return {audio_output: gr.update(visible=True, value='./speech.mp3'),
+            audio_to_video_button: gr.update(visible=True)}
+
+def generate_video(audio, athlete):
+    url = 'https://api.d-id.com/talks'
+    headers = {'accept': 'application/json',
+               'content-type': 'application/json',
+               'authorization': f'Basic {Constants.DID_API_KEY}'}
+    payload = {}
+    r = requests.post(url, headers=headers, json=payload)
+    return {video_output: gr.update(visible=True)}
 
 #creates the Gradio interface
 with gr.Blocks() as demo:
-    with gr.Tab('Text-to-Video'):
-        text = gr.Textbox(placeholder='Enter text here', label='Input')
-        athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
-        text_to_video_button = gr.Button('Generate Audio')
-        video_output= gr.Audio(label='Audio')
-    with gr.Tab('Text-to-Audio-to-Video'):
-        text2 = gr.Textbox(placeholder='Enter text here', label='Input')
-        athlete2 = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan')
-        text_to_audio_button = gr.Button('Generate Audio')
-        text_to_video_button2 = gr.Button('Generate Video')
-        audio = gr.Audio(label='Audio', interactive=True)
-        audio_to_video_button = gr.Button('Generate Video')
-        video_output2= gr.Video(label='Video', interactive=False)
-        text_to_video_button.click(generate, inputs=[text, athlete], outputs=video_output)
+    text = gr.Textbox(placeholder='Enter text here', label='Input')
+    athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan', label='Select Athlete')
+    text_to_audio_button = gr.Button('Generate Audio')
+    audio_output = gr.Audio(label='Audio', visible=False, interactive=False)
+    audio_to_video_button = gr.Button('Generate Video Based On This Audio', visible=False)
+    video_output = gr.Video(label='Video', visible=False)
+
+    text_to_audio_button.click(generate_audio, inputs=[text, athlete], outputs=[audio_output, audio_to_video_button])
+    audio_to_video_button.click(generate_video, inputs=[audio_output, athlete], outputs=video_output)
 
 if __name__ == "__main__":
     demo.launch()
