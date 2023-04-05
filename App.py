@@ -3,7 +3,6 @@ import time
 import gradio as gr
 import Constants
 
-
 #generates an audio fragment of the chosen athlete reading the text
 def generate_audio(text, athlete):
     match athlete:
@@ -70,7 +69,7 @@ def generate_video(athlete):
     print (r)
     id = r['id']
 
-    #get the url to the video
+    #get the url to the generated video
     url = f'https://api.d-id.com/talks/{id}'
     headers = {'accept': 'application/json',
                'authorization': f'Basic {Constants.DID_API_KEY}'
