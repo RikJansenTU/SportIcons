@@ -2,19 +2,20 @@ import requests
 import time
 import gradio as gr
 import Constants
+import Hidden_Constants
 
 #generates an audio fragment of the chosen athlete reading the text
 def generate_audio(text, athlete):
     match athlete:
         case 'Michael Jordan':
-            voice_id = 'pNInz6obpgDQGcFmaJgB'
+            voice_id = Constants.MJ_VOICE_ID
         case 'Louis van Gaal':
             voice_id = 2
         case 'Serena Williams':
             voice_id = 3        
 
     url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
-    headers = {'xi-api-key' : Constants.ELEVENLABS_API_KEY}
+    headers = {'xi-api-key' : Hidden_Constants.ELEVENLABS_API_KEY}
     payload = {'text': text, 
                'voice_settings':
                     {'stability': 0.75, 
@@ -25,7 +26,6 @@ def generate_audio(text, athlete):
     
     with open('speech.mp3', 'wb') as f:
         f.write(r.content)
-    print (r.content)
 
     return {audio_output: gr.update(visible=True, value='./speech.mp3'),
             audio_to_video_button: gr.update(visible=True)
@@ -35,44 +35,60 @@ def generate_audio(text, athlete):
 #generates a talking head video of the chosen athlete based on the audio file previously generated
 def generate_video(athlete):
 
-    #upload portrait image to a temp location
-    image_filename = f'{athlete}.jpg'
-    url = 'https://api.d-id.com/images'
-    files = {'image': (image_filename, open(image_filename, 'rb'), 'image/jpeg')}
-    r = requests.post(url, headers=headers, files=files).json()
-    print (r)
-    image_url = r['url']
+    #credits check
+    url = "https://api.d-id.com/credits"
+    headers = {
+        "accept": "application/json",
+        "authorization": f'Basic {Hidden_Constants.DID_API_KEY}'
+    }
+    response = requests.get(url, headers=headers)
+    print(response.text)
+
+    #get actor image url
+    match athlete:
+        case 'Michael Jordan':
+            image_url = Constants.MJ_IMAGE_URL
+        case 'Louis van Gaal':
+            image_url = Constants.MJ_IMAGE_URL
+        case 'Serena Williams':
+            image_url = Constants.MJ_IMAGE_URL     
 
     #upload audio file to a temp location
     url = 'https://api.d-id.com/audios'
-    headers = {'accept': 'application/json',
-               'authorization': f'Basic {Constants.DID_API_KEY}'
-               }
     files = {'audio': ('speech.mp3', open('speech.mp3', 'rb'), 'audio/mpeg')}
     r = requests.post(url, headers=headers, files=files).json()
-    print (r)
     audio_url = r['url']
+    print(audio_url)
 
     #generate the talking head video
     url = 'https://api.d-id.com/talks'
     headers = {'accept': 'application/json',
                'content-type': 'application/json',
-               'authorization': f'Basic {Constants.DID_API_KEY}'
+               'authorization': f'Basic {Hidden_Constants.DID_API_KEY}'
                }
-    payload = {'source_url': image_url,
-                'script:': {
-                    'type': 'audio', 
-                    'url': audio_url
-                    }
-                }
-    r = requests.post(url, headers=headers, json=payload).json()
-    print (r)
+    payload = {
+        "script": {
+            "type": "audio",
+            "ssml": "false",
+            "audio_url": audio_url
+        },
+        "config": {
+            "fluent": "false",
+            "pad_audio": "0.0"
+        },
+        "source_url": image_url
+        }
+    r = requests.post(url, headers=headers, json=payload)
+    print(r)
+    print(r.text)
+    r = r.json()
     id = r['id']
+    print(id)
 
-    #get the url to the generated video
+    #the url to the generated video
     url = f'https://api.d-id.com/talks/{id}'
     headers = {'accept': 'application/json',
-               'authorization': f'Basic {Constants.DID_API_KEY}'
+               'authorization': f'Basic {Hidden_Constants.DID_API_KEY}'
                }
     
     #check if the video is done generating, and get the url if it is
@@ -81,14 +97,31 @@ def generate_video(athlete):
         r = requests.get(url, headers=headers).json()
         print (r)
         status = r['status']
-        if status == 'error' | 'rejected':
+        if status == 'done':
+            video_url = r['result_url']
+            break    
+        elif status == 'error' or 'rejected':
             print('Something went wrong.')
             break
-        elif status == 'done':
-            video_url = r['result_url']
-            break          
+
+    file = requests.get(video_url)
+    with open('video.mp4', 'wb') as f:
+        f.write(file.content)   
     
-    return {video_output: gr.update(visible=True, value=video_url)}
+    return {video_output: gr.update(visible=True, value='video.mp4')}
+
+    #upload portrait image to a temp location
+    image_filename = f'SportIcons/{athlete}.jpg'
+    url = 'https://api.d-id.com/images'
+    headers = {'accept': 'application/json',
+                'content-type': 'multipart/form-data',
+                'authorization': f'Basic {Constants.DID_API_KEY}'
+                }
+    files = {'image': (image_filename, open(image_filename, 'rb'), 'image/jpeg')}
+    r = requests.post(url, headers=headers, files=files)
+    print (r)
+    print (r.text)
+    image_url = r['url']
 
 
 #creates the Gradio interface
