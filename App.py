@@ -10,9 +10,9 @@ def generate_audio(text, athlete):
         case 'Michael Jordan':
             voice_id = Constants.MJ_VOICE_ID
         case 'Louis van Gaal':
-            voice_id = 2
+            voice_id = Constants.MJ_VOICE_ID
         case 'Serena Williams':
-            voice_id = 3        
+            voice_id = Constants.MJ_VOICE_ID        
 
     #generate the audio fragment
     url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
