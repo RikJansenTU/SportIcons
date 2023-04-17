@@ -74,7 +74,8 @@ def generate_video(athlete):
         },
         "config": {
             "fluent": "false",
-            "pad_audio": "0.0"
+            "pad_audio": "0.0",
+            "stitch": "true"
         },
         "source_url": image_url
         }
