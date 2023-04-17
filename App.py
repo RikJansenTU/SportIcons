@@ -14,6 +14,7 @@ def generate_audio(text, athlete):
         case 'Serena Williams':
             voice_id = 3        
 
+    #generate the audio fragment
     url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
     headers = {'xi-api-key' : Hidden_Constants.ELEVENLABS_API_KEY}
     payload = {'text': text, 
@@ -24,9 +25,11 @@ def generate_audio(text, athlete):
                 }
     r = requests.post(url, headers=headers, json=payload)
     
+    #save the audio fragment locally
     with open('speech.mp3', 'wb') as f:
         f.write(r.content)
 
+    #display the audio in the right box and update the UI for video generation
     return {audio_output: gr.update(visible=True, value='./speech.mp3'),
             audio_to_video_button: gr.update(visible=True)
             }
@@ -74,7 +77,7 @@ def generate_video(athlete):
         },
         "config": {
             "fluent": "false",
-            "pad_audio": "0.0",
+            "pad_audio": "0.5",
             "stitch": "true"
         },
         "source_url": image_url
@@ -104,7 +107,8 @@ def generate_video(athlete):
         elif status == 'error' or 'rejected':
             print('Something went wrong.')
             break
-
+    
+    #save file locally
     file = requests.get(video_url)
     with open('video.mp4', 'wb') as f:
         f.write(file.content)   
