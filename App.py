@@ -82,12 +82,8 @@ def generate_video(athlete):
         },
         "source_url": image_url
         }
-    r = requests.post(url, headers=headers, json=payload)
-    print(r)
-    print(r.text)
-    r = r.json()
+    r = requests.post(url, headers=headers, json=payload).json()
     id = r['id']
-    print(id)
 
     #the url to the generated video
     url = f'https://api.d-id.com/talks/{id}'
@@ -99,7 +95,6 @@ def generate_video(athlete):
     while True:
         time.sleep(5)
         r = requests.get(url, headers=headers).json()
-        print (r)
         status = r['status']
         if status == 'done':
             video_url = r['result_url']
