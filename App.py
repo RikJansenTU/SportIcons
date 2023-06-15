@@ -9,7 +9,7 @@ def generate_audio(text, athlete):
     match athlete:
         case 'Michael Jordan':
             voice_id = Constants.MJ_VOICE_ID
-        case 'Louis van Gaal':
+        # case 'Louis van Gaal':
             voice_id = Constants.MJ_VOICE_ID
         case 'Serena Williams':
             voice_id = Constants.MJ_VOICE_ID        
