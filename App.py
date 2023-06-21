@@ -4,6 +4,19 @@ import gradio as gr
 import Constants
 import Hidden_Constants
 
+#css styling
+tde_theme = gr.themes.Default().set(
+    body_background_fill='#040617',
+    body_background_fill_dark="linear-gradient(to top right, #4f0829, #040617)",
+    button_large_radius='*radius_xxl',
+    button_secondary_background_fill='#f5f5f5',
+    button_secondary_background_fill_dark='#f5f5f5',
+    button_secondary_background_fill_hover='#dcddde',
+    button_secondary_background_fill_hover_dark='#dcddde',
+    button_secondary_text_color='#040617',
+    button_secondary_text_color_dark='#040617',
+)
+
 #generates an audio fragment of the chosen athlete reading the text
 def generate_audio(text, athlete):
     match athlete:
@@ -125,7 +138,7 @@ def generate_video(athlete):
 
 
 #creates the Gradio interface
-with gr.Blocks() as demo:
+with gr.Blocks(theme=tde_theme) as demo:
     text = gr.Textbox(placeholder='Enter text here', label='Input')
     athlete = gr.Dropdown(choices=['Michael Jordan', 'Louis van Gaal', 'Serena Williams'], value='Michael Jordan', label='Select Athlete')
     text_to_audio_button = gr.Button('Generate Audio')
